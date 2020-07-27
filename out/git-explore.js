@@ -1,9 +1,10 @@
 "use strict";
 const vscode = require("vscode");
 const process = require("child_process");
+const { stdout } = require("process");
+var cwd = vscode.workspace.rootPath;
 
 function stageFile(path) {
-    let cwd = vscode.workspace.rootPath;
     let cmd = `git add -f "${path}"`;
     process.exec(cmd, {
         cwd: cwd
@@ -59,27 +60,42 @@ function archiveCurrentChanges() {
 }
 
 function archiveCommitChanges() {
-    let options: InputBoxOptions = {
-        prompt: "Label: ",
-        placeHolder: "(placeholder)"
+    var items = [];
+    const { spawn } = require('child_process');
+    var i = 0;
+    var logger = function() {
+        const s = spawn("git", [
+            "log",
+            `--pretty=tformat:"%h/%ad"`
+        ], { cwd: cwd });
+        s.stdout.on('data', (data) => {
+            var data = String.fromCharCode.apply(null, new Uint16Array(data));
+            console.log(i + "=>" + data);
+            var lst = data.split("\n");
+            for (let index = 0; index < lst.length - 1; index++) {
+                let item = lst[index].split("/");
+                items.push({
+                    label: item[0].replace("\"", ""),
+                    description: item[1].replace("\"", "")
+                });
+            }
+            i++;
+            vscode.window.showQuickPick(items).then(sel => {
+                var cmd = `git diff-tree --no-commit-id --name-only -r ${sel.label} | zip -d@ ${sel.label}_changes.zip`;
+                process.exec(cmd, { cwd: cwd }, (error, stdout, stderr) => {
+                    console.log(stdout);
+                    console.error(stderr);
+                });
+            });
+        });
+        s.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+        s.on('close', (code) => {
+            console.log(`child process exited with code ${code}`);
+        });
     }
-
-    window.showInputBox(options).then(value => {
-        if (!value) return;
-        answer1 = value;
-        // show the next dialog, etc.
-    });
-    let cmd = `zip latest_changes.zip $(git diff-tree --no-commit-id --name-only -r HEAD)`;
-    let cwd = vscode.workspace.rootPath;
-    process.exec(cmd, {
-        cwd: cwd
-    }, (error, stdout, stderr) => {
-        console.dir(error);
-        if (error)
-            vscode.window.showErrorMessage("Failed create archive files");
-        else
-            vscode.window.showInformationMessage("Archive last changes successful");
-    });
+    logger();
 }
 
 exports.stageFile = stageFile;

@@ -15,7 +15,7 @@
         "onCommand:action.archiveUnstageChanges",
         "onCommand:action.archiveLastCommit",
         "onCommand:action.archiveCurrentChanges",
-        "onCommand:action.archiveLastChanges"
+        "onCommand:action.archiveCommitChanges"
     ],
     "main": "./out/extension.js",
     "contributes": {
@@ -34,12 +34,7 @@
             {
                 "command": "action.archiveCurrentChanges",
                 "title": "Git: Archive Current Changes"
-            },
-            {
-                "command": "action.archiveCommitChanges",
-                "title": "Git: Archive Commited Changes File"
             }
-
         ],
         "menus": {
             "explorer/context": [{
@@ -58,11 +53,6 @@
                 },
                 {
                     "command": "action.archiveCurrentChanges",
-                    "when": "scmProvider == git",
-                    "group": "ExtGroup"
-                },
-                {
-                    "command": "action.archiveCommitChanges",
                     "when": "scmProvider == git",
                     "group": "ExtGroup"
                 }

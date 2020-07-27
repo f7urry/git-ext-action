@@ -12,11 +12,11 @@ function activate(context) {
     let archiveLastCommit = vscode.commands.registerCommand('action.archiveLastCommit', function() {
         git_explore.archiveLastCommit();
     });
-    let archiveCommitChanges = vscode.commands.registerCommand('action.archiveCommitChanges', function() {
-        git_explore.archiveCommitChanges();
-    });
     let archiveCurrentChanges = vscode.commands.registerCommand('action.archiveCurrentChanges', function() {
         git_explore.archiveCurrentChanges();
+    });
+    let archiveCommitChanges = vscode.commands.registerCommand('action.archiveCommitChanges', async() => {
+        git_explore.archiveCommitChanges();
     });
     context.subscriptions.push(stageSelectedFile);
     context.subscriptions.push(archiveUnstageChanges);
